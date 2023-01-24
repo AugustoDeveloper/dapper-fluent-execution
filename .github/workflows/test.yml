@@ -1,0 +1,26 @@
+name: Test-CI
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    name: Testing application
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Build stage
+      run: dotnet build --configuration Release
+
+    - name: Test stage
+      run: dotnet test --no-build --verbosity normal --configuration Release /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+
+    - name: Test code coverage
+      uses: codecov/codecov-action@v1

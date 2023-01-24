@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net6.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Dapper.FluentExecution</RootNamespace>
+    <AssemblyName>Dapper.FluentExecution</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Authors>Augusto Mesquita</Authors>
+    <Company>Aucamana</Company>
+    <Owners>augustodeveloper</Owners>
+    <Version>0.1.1</Version>
+    <PackageId>Dapper.FluentExecution</PackageId>
+    <PackageTags>Dapper;Dapper.Fluent;Dapper.Query;Execution;Dapper.Execution</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Product>Dapper.FluentExecution</Product>
+    <Description>A lite library to make easy execution SQL on database connection by Dapper</Description>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <RepositoryUrl>https://github.com/AugustoDeveloper/dapper-fluent-execution</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryBranch>main</RepositoryBranch>
+    <Copyright>Copyright © 2023</Copyright>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>FluentExecution.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.0" />
+  </ItemGroup>
+
+</Project>
