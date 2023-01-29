@@ -10,6 +10,8 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
     private readonly StringBuilder sqlBuilder;
     private DynamicParameters? parameters;
     private IDbTransaction? transaction;
+    private CommandType commandType;
+    private TimeSpan? commandTimeout;
 
     private DynamicParameters Parameters => GetParameters();
 
@@ -17,6 +19,7 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
     {
         this.connection = connection;
         this.sqlBuilder = new(rootSql);
+        this.commandType = CommandType.Text;
     }
 
     internal static IExecutionBuilder New(string? sql, IDbConnection? connection)
@@ -33,7 +36,6 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
 #else
         ArgumentNullException.ThrowIfNull(connection);
 #endif
-
         return new ExecutionSqlBuilder(sql!, connection!);
     }
 
@@ -47,12 +49,37 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
         return parameters;
     }
 
+    private int? GetCommandTimeout()
+    {
+        if (!commandTimeout.HasValue)
+        {
+            return null;
+        }
+
+        if (commandTimeout.Value.Seconds < 1)
+        {
+            return null;
+        }
+
+        return commandTimeout.Value.Seconds;
+    }
+
     private CommandDefinition BuildCommandDefinition(CancellationToken cancellation = default)
-        => new CommandDefinition(sqlBuilder.ToString(), parameters, transaction: transaction, cancellationToken: cancellation);
+        => new CommandDefinition(sqlBuilder.ToString(), parameters, transaction, GetCommandTimeout(), commandType, cancellationToken: cancellation);
 
     IExecutionBuilder IExecutionBuilder.WithTransaction(IDbTransaction transaction)
     {
         this.transaction = transaction;
+
+        return this;
+    }
+
+    IExecutionBuilder IExecutionBuilder.AsStoredProcedure()
+    {
+        if (commandType != CommandType.StoredProcedure)
+        {
+            commandType = CommandType.StoredProcedure;
+        }
 
         return this;
     }
@@ -118,6 +145,29 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
         return this;
     }
 
+    IExecutionBuilder IExecutionBuilder.WithParameter(bool condition, object values)
+    {
+        if (condition)
+        {
+            Parameters.AddDynamicParams(values);
+        }
+
+        return this;
+    }
+
+    IExecutionBuilder IExecutionBuilder.WithParameter(object values)
+    {
+        Parameters.AddDynamicParams(values);
+
+        return this;
+    }
+
+    IExecutionBuilder IExecutionBuilder.WithCommandTimeout(TimeSpan timeout)
+    {
+        this.commandTimeout = timeout;
+        return this;
+    }
+
     IEnumerable<dynamic> IExecutionBuilder.Query() => this.connection.Query<dynamic>(BuildCommandDefinition());
 
     IEnumerable<T> IExecutionBuilder.Query<T>() => this.connection.Query<T>(BuildCommandDefinition());
@@ -158,15 +208,9 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
         return new(result);
     }
 
-    async Task<dynamic> IExecutionBuilder.QuerySingleAsync(CancellationToken cancellation)
-    {
-        return await this.connection.QuerySingleAsync(BuildCommandDefinition(cancellation));
-    }
+    async Task<dynamic> IExecutionBuilder.QuerySingleAsync(CancellationToken cancellation) => await this.connection.QuerySingleAsync(BuildCommandDefinition(cancellation));
 
-    async Task<T> IExecutionBuilder.QuerySingleAsync<T>(CancellationToken cancellation)
-    {
-        return await this.connection.QuerySingleAsync<T>(BuildCommandDefinition(cancellation));
-    }
+    async Task<T> IExecutionBuilder.QuerySingleAsync<T>(CancellationToken cancellation) => await this.connection.QuerySingleAsync<T>(BuildCommandDefinition(cancellation));
 
     async Task<dynamic?> IExecutionBuilder.QuerySingleOrDefaultAsync(CancellationToken cancellation)
     {
@@ -193,15 +237,9 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
 
     }
 
-    async Task<dynamic> IExecutionBuilder.QueryFirstAsync(CancellationToken cancellation)
-    {
-        return await this.connection.QueryFirstAsync(BuildCommandDefinition(cancellation));
-    }
+    async Task<dynamic> IExecutionBuilder.QueryFirstAsync(CancellationToken cancellation) => await this.connection.QueryFirstAsync(BuildCommandDefinition(cancellation));
 
-    async Task<T> IExecutionBuilder.QueryFirstAsync<T>(CancellationToken cancellation)
-    {
-        return await this.connection.QueryFirstAsync<T>(BuildCommandDefinition(cancellation));
-    }
+    async Task<T> IExecutionBuilder.QueryFirstAsync<T>(CancellationToken cancellation) => await this.connection.QueryFirstAsync<T>(BuildCommandDefinition(cancellation));
 
     async Task<dynamic?> IExecutionBuilder.QueryFirstOrDefaultAsync(CancellationToken cancellation)
     {
@@ -232,4 +270,20 @@ internal class ExecutionSqlBuilder : IExecutionBuilder
         using var gridReader = await this.connection.QueryMultipleAsync(BuildCommandDefinition(cancellation));
         return await funcTask(gridReader);
     }
+
+    int IExecutionBuilder.Execute() => this.connection.Execute(BuildCommandDefinition());
+
+    async Task<int> IExecutionBuilder.ExecuteAsync(CancellationToken cancellation) => await this.connection.ExecuteAsync(BuildCommandDefinition(cancellation));
+
+    object IExecutionBuilder.ExecuteScalar() => this.connection.ExecuteScalar(BuildCommandDefinition());
+
+    T IExecutionBuilder.ExecuteScalar<T>() => this.connection.ExecuteScalar<T>(BuildCommandDefinition());
+
+    async Task<object> IExecutionBuilder.ExecuteScalarAsync(CancellationToken cancellation) => await this.connection.ExecuteScalarAsync(BuildCommandDefinition(cancellation));
+
+    async Task<T> IExecutionBuilder.ExecuteScalarAsync<T>(CancellationToken cancellation) => await this.connection.ExecuteScalarAsync<T>(BuildCommandDefinition(cancellation));
+
+    IDataReader IExecutionBuilder.ExecuteDataReader() => this.connection.ExecuteReader(BuildCommandDefinition());
+
+    async Task<IDataReader> IExecutionBuilder.ExecuteDataReaderAsync(CancellationToken cancellation) => await this.connection.ExecuteReaderAsync(BuildCommandDefinition(cancellation));
 }

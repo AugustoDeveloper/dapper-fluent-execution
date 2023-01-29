@@ -7,17 +7,17 @@ This package is a simple, easy and fluent way to execute SQL on database connect
 You can install the package using one of the options bellow:
  - Package Manager
 ```
-PM> NuGet\Install-Package Dapper.FluentExecution -Version 0.1.1
+PM> NuGet\Install-Package Dapper.FluentExecution -Version 0.2.0
 ```
 
  - .NET CLI
 ```
-dotnet add package Dapper.FluentExecution --version 0.1.1
+dotnet add package Dapper.FluentExecution --version 0.2.0
 ```
 
  - PackageReference
 ```
-<PackageReference Include="Dapper.FluentExecution" Version="0.1.1" />
+<PackageReference Include="Dapper.FluentExecution" Version="0.2.0" />
 ```
 
 ## Usage
@@ -49,14 +49,13 @@ public async Task<Person?> GetByIdAsync(int id, int? specificAddressId, Cancella
         .WithParameter("@Id", id)
         .QuerySingleOrDefaultAsync<Person>(cancellation);
 ```
-## TODO - v0.2.0
-- [ ] Add unit tests for `IExecutionBuilder` methods
-- [ ] Add summary doc on all .cs files
-- [ ] Add suport to `Execution` methods on `IExecutionBuilder`. E.g.: `Execute, ExecuteAsync, ExecuteScalar, ExecuteScalarAsync...`.
-- [ ] Add support to dynamic parameter by dynamic object. E.g.: `new { Param1 = "1", Param2 = 2 }`
-- [ ] Add support to set command timeout
-- [ ] Add support to set query as an execution of stored procedure
-- [ ] Add `QueryAsync, Query,...` an `IEnumerable<T>` result
+## Release - v0.2.0
+- Add summary doc on all .cs files
+- Add suport to `Execution` methods on `IExecutionBuilder`. E.g.: `Execute, ExecuteAsync, ExecuteScalar, ExecuteScalarAsync...`.
+- Add support to dynamic parameter by dynamic object. E.g.: `new { Param1 = "1", Param2 = 2 }`
+- Add support to set command timeout
+- Add support to set query as an execution of stored procedure
+- Add `QueryAsync, Query,...` an `IEnumerable<T>` result
 
 ## Release - v0.1.1
 - Fixing `csproj` documentation to Nuget.org

@@ -14,7 +14,7 @@
     <Authors>Augusto Mesquita</Authors>
     <Company>Aucamana</Company>
     <Owners>augustodeveloper</Owners>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <PackageId>Dapper.FluentExecution</PackageId>
     <PackageTags>Dapper;Dapper.Fluent;Dapper.Query;Execution;Dapper.Execution</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
