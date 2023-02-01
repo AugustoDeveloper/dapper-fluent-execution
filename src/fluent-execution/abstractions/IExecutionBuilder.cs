@@ -8,6 +8,8 @@ namespace Dapper.FluentExecution.Abstractions;
 ///</summary>
 public interface IExecutionBuilder
 {
+    bool Disposed { get; }
+
     ///<summary>
     ///Appends a SQL script string based on condition argument.
     ///</summary>
@@ -32,7 +34,8 @@ public interface IExecutionBuilder
     IExecutionBuilder WithCommandTimeout(TimeSpan timeout);
 
     ///<summary>
-    ///Indicates the SQL script text is a Stored Procedure execution
+    ///Indicates the SQL script text is a Stored Procedure execution, until call
+    ///this method the SQL script executed as <seealso cref="CommandType.Text"/> type
     ///</summary>
     ///<returns>An instance of builder</returns>
     IExecutionBuilder AsStoredProcedure();
@@ -139,14 +142,14 @@ public interface IExecutionBuilder
     ///</summary>
     ///<param name="cancellation">Allows to cancel all operation by the cancellatio token</param>
     ///<returns>An <see cref="AsyncResult{dynamic}"/> instance to result enumerable values</returns>
-    AsyncResult<dynamic> QueryAsync(CancellationToken cancellation = default);
+    Task<IEnumerable<dynamic>> QueryAsync(CancellationToken cancellation = default);
 
     ///<summary>
     ///Executes a query by all SQL script text and all previous configurations or parameters added.
     ///</summary>
     ///<param name="cancellation">Allows to cancel all operation by the cancellatio token</param>
     ///<returns>An <see cref="AsyncResult{T}"/>instance to result enumerable values</returns>
-    AsyncResult<T> QueryAsync<T>(CancellationToken cancellation = default);
+    Task<IEnumerable<T>> QueryAsync<T>(CancellationToken cancellation = default);
 
     ///<summary>
     ///Executes a query by all SQL script text and all previous configurations or parameters added.
