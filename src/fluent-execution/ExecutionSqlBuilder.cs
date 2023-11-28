@@ -4,14 +4,15 @@ using Dapper.FluentExecution.Abstractions;
 
 namespace Dapper.FluentExecution;
 
-//FIXME: All connection execution should dispose this class instance
 //FIXME: All Asynchronous fuction need to use ConfigureAwait(false)
-//TODO: We need add a way to query (multiple) of many differents types
+//TODO: We need add a way to query (multiple) of many differents types as splitted way
+//TODO: We need add a function fill a table value as parameter
 internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
 {
     private readonly IDbConnection connection;
     private readonly StringBuilder sqlBuilder;
     private readonly bool shouldDisposeConnection;
+    private readonly object parametersLock;
 
     private DynamicParameters? parameters;
     private IDbTransaction? transaction;
@@ -27,6 +28,7 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
         this.sqlBuilder = new(rootSql);
         this.commandType = CommandType.Text;
         this.shouldDisposeConnection = shouldDisposeConnection;
+        this.parametersLock = new();
     }
 
     internal static IExecutionBuilder New(string? sql, bool shouldDisposeConnection, IDbConnection? connection)
@@ -46,9 +48,20 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
 
     private DynamicParameters GetParameters()
     {
+        //We don't want enter in lock every time 
+        //to get parameters, so we just duplicate
+        //the condition, when parameter is null
+        //in case the parameter will be changed.
+        //That way, we avoiding race condition
         if (parameters is null)
         {
-            parameters = new();
+            lock (parametersLock)
+            {
+                if (parameters is null)
+                {
+                    parameters = new();
+                }
+            }
         }
 
         return parameters;
@@ -89,26 +102,49 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
         return this;
     }
 
-    //TODO: We need a override of this function to allows add some specifics
-    //      parameters that ensure the condition
-    //TODO: We need add override to allows append sql without condition
-    IExecutionBuilder IExecutionBuilder.AppendSql(bool condition, string sql)
-    {
-        if (condition)
-        {
-            sqlBuilder.Append(sql);
-        }
-
-        return this;
-    }
-
     IExecutionBuilder IExecutionBuilder.WithCommandTimeout(TimeSpan timeout)
     {
         this.commandTimeout = timeout;
         return this;
     }
 
+    private async Task<T> PrepareAndExecuteAsync<T>(Func<CommandDefinition, Task<T>> dapperFunction, CancellationToken cancellation)
+    {
+        CommandDefinition def = BuildCommandDefinition(cancellation);
+        try
+        {
+            var result = await dapperFunction.Invoke(def);
+            return result;
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            Dispose();
 
+        }
+    }
+
+    private T PrepareAndExecute<T>(Func<CommandDefinition, T> dapperFunction)
+    {
+        CommandDefinition def = BuildCommandDefinition();
+        try
+        {
+            var result = dapperFunction.Invoke(def);
+            return result;
+        }
+        catch
+        {
+            throw;
+        }
+        finally
+        {
+            Dispose();
+
+        }
+    }
 
     protected virtual void Dispose(bool disposing)
     {
