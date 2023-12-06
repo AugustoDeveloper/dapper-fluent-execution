@@ -6,5 +6,5 @@ namespace Dapper.FluentExecution;
 internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
     IDataReader IExecutionBuilder.ExecuteDataReader()
-        => this.connection.ExecuteReader(BuildCommandDefinition());
+        => PrepareAndExecute(this.connection.ExecuteReader);
 }

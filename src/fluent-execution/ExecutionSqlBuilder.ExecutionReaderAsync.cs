@@ -6,5 +6,5 @@ namespace Dapper.FluentExecution;
 internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
     async Task<IDataReader> IExecutionBuilder.ExecuteDataReaderAsync(CancellationToken cancellation)
-        => await this.connection.ExecuteReaderAsync(BuildCommandDefinition(cancellation));
+        => await PrepareAndExecuteAsync(this.connection.ExecuteReaderAsync, cancellation);
 }

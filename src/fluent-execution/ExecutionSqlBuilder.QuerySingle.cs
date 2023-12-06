@@ -4,11 +4,15 @@ namespace Dapper.FluentExecution;
 
 internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
-    dynamic IExecutionBuilder.QuerySingle() => this.connection.QuerySingle<dynamic>(BuildCommandDefinition());
+    dynamic IExecutionBuilder.QuerySingle()
+        => PrepareAndExecute(this.connection.QuerySingle<dynamic>);
 
-    T IExecutionBuilder.QuerySingle<T>() => this.connection.QuerySingle<T>(BuildCommandDefinition());
+    T IExecutionBuilder.QuerySingle<T>()
+        => PrepareAndExecute(this.connection.QuerySingle<T>);
 
-    dynamic? IExecutionBuilder.QuerySingleOrDefault() => this.connection.QueryFirst<dynamic?>(BuildCommandDefinition());
+    dynamic? IExecutionBuilder.QuerySingleOrDefault()
+        => PrepareAndExecute(this.connection.QueryFirst<dynamic?>);
 
-    public T? QuerySingleOrDefault<T>() => this.connection.QueryFirstOrDefault<T?>(BuildCommandDefinition());
+    public T? QuerySingleOrDefault<T>()
+        => PrepareAndExecute(this.connection.QueryFirstOrDefault<T?>);
 }

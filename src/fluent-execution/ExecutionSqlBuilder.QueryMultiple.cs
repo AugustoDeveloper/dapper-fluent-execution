@@ -6,7 +6,12 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
     T IExecutionBuilder.QueryMultiple<T>(Func<SqlMapper.GridReader, T> func)
     {
-        using var gridreader = this.connection.QueryMultiple(BuildCommandDefinition());
-        return func(gridreader);
+        Func<CommandDefinition, T> queryMultipleFunc = (CommandDefinition def) =>
+        {
+            using var gridreader = this.connection.QueryMultiple(def);
+            return func(gridreader);
+        };
+
+        return PrepareAndExecute(queryMultipleFunc);
     }
 }

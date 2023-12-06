@@ -9,12 +9,28 @@ namespace Dapper.FluentExecution.Abstractions;
 public interface IExecutionBuilder
 {
     ///<summary>
+    ///Appends a SQL script string 
+    ///</summary>
+    ///<param name="sql">SQL script text</param>
+    ///<returns>An instance of builder</returns>
+    IExecutionBuilder AppendSql(string sql);
+
+    ///<summary>
     ///Appends a SQL script string based on condition argument.
     ///</summary>
     ///<param name="sql">SQL script text</param>
     ///<param name="condition">Indicates wether the SQL script should be appended to execution</param>
     ///<returns>An instance of builder</returns>
     IExecutionBuilder AppendSql(bool condition, string sql);
+
+    ///<summary>
+    ///Appends a SQL script string based on condition argument with parameters
+    ///</summary>
+    ///<param name="sql">SQL script text</param>
+    ///<param name="condition">Indicates wether the SQL script should be appended to execution</param>
+    ///<param name="builder">Allows to create parameters for sql script based on <paramref name="condition"/> </param>
+    ///<returns>An instance of builder</returns>
+    IExecutionBuilder AppendSql(bool condition, string sql, Action<IParameterActionBuilder> builder);
 
     ///<summary>
     ///Adds a transaction allows the execution can be commited or not

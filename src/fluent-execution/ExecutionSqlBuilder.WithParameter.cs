@@ -7,24 +7,21 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
     IExecutionBuilder IExecutionBuilder.WithParameter(string parameterName, DbType dbType, object value, int size)
     {
-        Parameters.Add(parameterName, value, dbType, size: size);
+        ParameterBuilder.WithParameter(parameterName, dbType, value, size: size);
 
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(bool condition, string parameterName, DbType dbType, object value, int size)
     {
-        if (condition)
-        {
-            Parameters.Add(parameterName, value, dbType, size: size);
-        }
+        ParameterBuilder.WithParameter(condition, parameterName, dbType, value, size: size);
 
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(string parameterName, DbType dbType, object value)
     {
-        Parameters.Add(parameterName, value, dbType);
+        ParameterBuilder.WithParameter(parameterName, dbType, value);
 
         return this;
 
@@ -32,43 +29,34 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder
 
     IExecutionBuilder IExecutionBuilder.WithParameter(bool condition, string parameterName, DbType dbType, object value)
     {
-        if (condition)
-        {
-            Parameters.Add(parameterName, value, dbType);
-        }
+        ParameterBuilder.WithParameter(condition, parameterName, dbType, value);
 
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(bool condition, string parameterName, object value)
     {
-        if (condition)
-        {
-            Parameters.Add(parameterName, value);
-        }
+        ParameterBuilder.WithParameter(condition, parameterName, value);
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(string parameterName, object value)
     {
-        Parameters.Add(parameterName, value);
+        ParameterBuilder.WithParameter(parameterName, value);
 
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(bool condition, object values)
     {
-        if (condition)
-        {
-            Parameters.AddDynamicParams(values);
-        }
+        ParameterBuilder.WithParameter(condition, values);
 
         return this;
     }
 
     IExecutionBuilder IExecutionBuilder.WithParameter(object values)
     {
-        Parameters.AddDynamicParams(values);
+        ParameterBuilder.WithParameter(values);
 
         return this;
     }

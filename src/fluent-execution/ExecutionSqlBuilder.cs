@@ -13,14 +13,14 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
     private readonly StringBuilder sqlBuilder;
     private readonly bool shouldDisposeConnection;
     private readonly object parametersLock;
+    private IParameterableBuilder? parameterBuilder;
 
-    private DynamicParameters? parameters;
     private IDbTransaction? transaction;
     private CommandType commandType;
     private TimeSpan? commandTimeout;
     private bool disposed;
 
-    private DynamicParameters Parameters => GetParameters();
+    private IParameterableBuilder ParameterBuilder => GetParameterBuilder();
 
     private ExecutionSqlBuilder(string rootSql, bool shouldDisposeConnection, IDbConnection connection)
     {
@@ -46,25 +46,25 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
         return new ExecutionSqlBuilder(sql!, shouldDisposeConnection, connection!);
     }
 
-    private DynamicParameters GetParameters()
+    private IParameterableBuilder GetParameterBuilder()
     {
         //We don't want enter in lock every time 
         //to get parameters, so we just duplicate
         //the condition, when parameter is null
         //in case the parameter will be changed.
         //That way, we avoiding race condition
-        if (parameters is null)
+        if (parameterBuilder is null)
         {
             lock (parametersLock)
             {
-                if (parameters is null)
+                if (parameterBuilder is null)
                 {
-                    parameters = new();
+                    parameterBuilder = new DynamicParameterBuilder();
                 }
             }
         }
 
-        return parameters;
+        return ParameterBuilder;
     }
 
     private int? GetCommandTimeout()
@@ -83,7 +83,12 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
     }
 
     private CommandDefinition BuildCommandDefinition(CancellationToken cancellation = default)
-        => new CommandDefinition(sqlBuilder.ToString(), parameters, transaction, GetCommandTimeout(), commandType, cancellationToken: cancellation);
+        => new(sqlBuilder.ToString(),
+                parameterBuilder?.Build(),
+                transaction,
+                GetCommandTimeout(),
+                commandType,
+                cancellationToken: cancellation);
 
     IExecutionBuilder IExecutionBuilder.WithTransaction(IDbTransaction transaction)
     {
@@ -153,7 +158,7 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
             if (disposing)
             {
                 sqlBuilder.Clear();
-                parameters = null;
+                parameterBuilder?.Dispose();
 
                 if (shouldDisposeConnection)
                 {

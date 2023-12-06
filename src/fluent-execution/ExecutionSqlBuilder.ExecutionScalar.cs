@@ -5,8 +5,8 @@ namespace Dapper.FluentExecution;
 internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
     object IExecutionBuilder.ExecuteScalar()
-        => this.connection.ExecuteScalar(BuildCommandDefinition());
+        => PrepareAndExecute(this.connection.ExecuteScalar);
 
     T IExecutionBuilder.ExecuteScalar<T>()
-        => this.connection.ExecuteScalar<T>(BuildCommandDefinition());
+        => PrepareAndExecute(this.connection.ExecuteScalar<T>);
 }
