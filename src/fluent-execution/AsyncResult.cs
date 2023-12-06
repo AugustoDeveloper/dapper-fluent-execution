@@ -16,7 +16,7 @@ public struct AsyncResult<T>
     ///Performs an awaitable result as <see cref="IEnumerable{T}"/> of <typeparamref name="T"/> 
     ///</summary>
     ///<returns>An IEnumerable of <typeparamref name="T"/></returns>
-    public async Task<IEnumerable<T>> GetResultAsync() => await taskResult;
+    public async Task<IEnumerable<T>> GetResultAsync() => await taskResult.ConfigureAwait(false);
 
     ///<summary>
     ///Performs awaitable result as a <see cref="List{T}"/> of <typeparamref name="T"/>
@@ -24,7 +24,7 @@ public struct AsyncResult<T>
     ///<returns>A list of <typeparamref name="T"/></returns>
     public async Task<List<T>> ToListAsync()
     {
-        var newResult = await taskResult;
+        var newResult = await taskResult.ConfigureAwait(false);
 
         return newResult.ToList();
     }
@@ -35,7 +35,7 @@ public struct AsyncResult<T>
     ///<returns>An array of <typeparamref name="T"/></returns>
     public async Task<T[]> ToArrayAsync()
     {
-        var newResult = await taskResult;
+        var newResult = await taskResult.ConfigureAwait(false);
 
         return newResult.ToArray();
     }

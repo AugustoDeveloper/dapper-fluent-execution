@@ -4,6 +4,6 @@ namespace Dapper.FluentExecution;
 
 internal partial class ExecutionSqlBuilder : IExecutionBuilder
 {
-    Task<int> IExecutionBuilder.ExecuteAsync(CancellationToken cancellation)
-        => PrepareAndExecuteAsync(this.connection.ExecuteAsync, cancellation);
+    async Task<int> IExecutionBuilder.ExecuteAsync(CancellationToken cancellation)
+        => await PrepareAndExecuteAsync(this.connection.ExecuteAsync, cancellation).ConfigureAwait(false);
 }

@@ -8,10 +8,10 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder
     {
         Func<CommandDefinition, Task<T>> queryMultipleAsyncFunc = async (CommandDefinition def) =>
         {
-            using var gridReader = await this.connection.QueryMultipleAsync(def);
-            return await funcTask(gridReader);
+            using var gridReader = await this.connection.QueryMultipleAsync(def).ConfigureAwait(false);
+            return await funcTask(gridReader).ConfigureAwait(false);
         };
 
-        return await PrepareAndExecuteAsync(queryMultipleAsyncFunc, cancellation);
+        return await PrepareAndExecuteAsync(queryMultipleAsyncFunc, cancellation).ConfigureAwait(false);
     }
 }

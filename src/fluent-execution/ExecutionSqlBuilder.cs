@@ -118,7 +118,7 @@ internal partial class ExecutionSqlBuilder : IExecutionBuilder, IDisposable
         CommandDefinition def = BuildCommandDefinition(cancellation);
         try
         {
-            var result = await dapperFunction.Invoke(def);
+            var result = await dapperFunction.Invoke(def).ConfigureAwait(false);
             return result;
         }
         catch
